@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>婚禮流程時間軸</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --gold-pale: #f5eedf;
+    --ink: #1a1410;
+    --ink-soft: #3d3229;
+    --parchment: #faf6ef;
+    --rose: #c4846a;
+    --sage: #7a9e8e;
+    --blue: #6a8faf;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(201,169,110,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, rgba(196,132,106,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(122,158,142,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Decorative corner flourishes */
+  .page-corners::before,
+  .page-corners::after {
+    content: '❧';
+    position: fixed;
+    font-size: 2rem;
+    color: var(--gold);
+    opacity: 0.3;
+  }
+  .page-corners::before { top: 1.5rem; left: 1.5rem; transform: rotate(180deg); }
+  .page-corners::after { bottom: 1.5rem; right: 1.5rem; }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 4rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .header-pre {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 0.6rem;
+  }
+
+  .header h1 {
+    font-size: 2.6rem;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+  }
+
+  .header-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+
+  .header-divider::before,
+  .header-divider::after {
+    content: '';
+    flex: 1;
+    max-width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold));
+  }
+  .header-divider::after {
+    background: linear-gradient(to left, transparent, var(--gold));
+  }
+
+  .header-divider span {
+    color: var(--gold);
+    font-size: 1.1rem;
+  }
+
+  .header-date {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.25em;
+    opacity: 0.7;
+  }
+
+  /* Phase blocks */
+  .phase {
+    margin-bottom: 3rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .phase:nth-child(1) { animation-delay: 0.1s; }
+  .phase:nth-child(2) { animation-delay: 0.2s; }
+  .phase:nth-child(3) { animation-delay: 0.3s; }
+  .phase:nth-child(4) { animation-delay: 0.4s; }
+  .phase:nth-child(5) { animation-delay: 0.5s; }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .phase-icon {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    border: 1.5px solid;
+  }
+
+  .phase-icon.prep   { background: rgba(201,169,110,0.12); border-color: var(--gold); }
+  .phase-icon.ring   { background: rgba(196,132,106,0.12); border-color: var(--rose); }
+  .phase-icon.car    { background: rgba(122,158,142,0.12); border-color: var(--sage); }
+  .phase-icon.photo  { background: rgba(201,169,110,0.10); border-color: var(--gold); }
+  .phase-icon.banq   { background: rgba(106,143,175,0.12); border-color: var(--blue); }
+
+  .phase-title {
+    flex: 1;
+  }
+
+  .phase-title h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+
+  .phase-title span {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    opacity: 0.65;
+    letter-spacing: 0.1em;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+  }
+
+  .phase-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--gold-light), transparent);
+    opacity: 0.6;
+  }
+
+  /* Timeline rows */
+  .timeline {
+    position: relative;
+    padding-left: 5.5rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 3.8rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--gold-light), transparent);
+    opacity: 0.5;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .time-label {
+    position: absolute;
+    left: -5.5rem;
+    width: 4.8rem;
+    text-align: right;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.82rem;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+    padding-top: 0.18rem;
+    white-space: nowrap;
+  }
+
+  .dot {
+    position: absolute;
+    left: -1.75rem;
+    top: 0.45rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(201,169,110,0.15);
+  }
+
+  .item-content {
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    flex: 1;
+    border-left: 3px solid var(--gold-light);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .item-content:hover {
+    border-left-color: var(--gold);
+    box-shadow: 0 3px 12px rgba(201,169,110,0.15);
+  }
+
+  .item-content.rose  { border-left-color: rgba(196,132,106,0.4); }
+  .item-content.rose:hover  { border-left-color: var(--rose); box-shadow: 0 3px 12px rgba(196,132,106,0.15); }
+  .item-content.sage  { border-left-color: rgba(122,158,142,0.4); }
+  .item-content.sage:hover  { border-left-color: var(--sage); box-shadow: 0 3px 12px rgba(122,158,142,0.15); }
+  .item-content.blue  { border-left-color: rgba(106,143,175,0.4); }
+  .item-content.blue:hover  { border-left-color: var(--blue); box-shadow: 0 3px 12px rgba(106,143,175,0.15); }
+
+  .item-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.03em;
+  }
+
+  .item-duration {
+    display: inline-block;
+    font-size: 0.72rem;
+    color: var(--gold);
+    background: var(--gold-pale);
+    border-radius: 20px;
+    padding: 0.05rem 0.55rem;
+    margin-bottom: 0.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+
+  .item-detail {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  .item-detail ol {
+    padding-left: 1.2rem;
+  }
+
+  .item-detail li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note {
+    display: inline-block;
+    background: rgba(196,132,106,0.1);
+    color: var(--rose);
+    border-radius: 4px;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.75rem;
+    margin-left: 0.3rem;
+  }
+
+  /* Three-entry card for banquet */
+  .entry-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .entry-card {
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem 0.8rem;
+    border-top: 3px solid;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    font-size: 0.8rem;
+  }
+
+  .entry-card.one   { border-color: var(--gold); }
+  .entry-card.two   { border-color: var(--blue); }
+  .entry-card.three { border-color: var(--rose); }
+
+  .entry-card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.3rem;
+    color: var(--ink);
+  }
+
+  .entry-card-tag {
+    font-size: 0.72rem;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--ink-soft);
+    opacity: 0.7;
+    margin-bottom: 0.4rem;
+  }
+
+  .entry-card-detail {
+    color: var(--ink-soft);
+    line-height: 1.6;
+    font-size: 0.78rem;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gold-light);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    opacity: 0.8;
+    animation: fadeUp 0.6s ease 0.6s both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.8rem; }
+    .timeline { padding-left: 4.5rem; }
+    .time-label { left: -4.5rem; width: 3.8rem; font-size: 0.74rem; }
+    .timeline::before { left: 2.9rem; }
+    .dot { left: -1.55rem; }
+    .entry-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body class="page-corners">
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-pre">Our Wedding Day</div>
+    <h1>婚禮流程時間軸</h1>
+    <div class="header-divider"><span>✦</span></div>
+    <div class="header-date">從晨曦到落幕，每一刻都是永恆</div>
+  </div>
+
+  <!-- Phase 1: 前置準備 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-icon prep">⏰</div>
+      <div class="phase-title">
+        <h2>前置準備</h2>
+        <span>05:00 – 08:30</span>
+      </div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time-label">05:00</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">造型開始</div>
+          <div class="item-duration">3.5 小時</div>
+          <div class="item-detail">化妝順序：準新娘 → 準新郎 → 女方家長 → 男方家長</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">05:00</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">場地佈置</div>
+          <div class="item-duration">同步進行</div>
+          <div class="item-detail">客廳：高腳椅 ＋ 矮凳就位</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:00 前</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">儀式物品備妥</div>
+          <div class="item-detail">
+            甜茶（男方出席 6 位，茶杯茶托成套）・六禮聘禮排整齊・回禮托盤（喜餅 6+6 盒 ＋ 郭元益六禮回禮）
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 2: 文定儀式 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-icon ring">💍</div>
+      <div class="phase-title">
+        <h2>文定儀式</h2>
+        <span>08:30 – 09:10</span>
+      </div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time-label">08:30</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">介紹 ＋ 納徵</div>
+          <div class="item-duration">3 分鐘</div>
+          <div class="item-detail">
+            <ol>
+              <li>司儀開場介紹雙方</li>
+              <li>司儀宣告男方點交六禮／聘金，女方長輩點頭確認收受</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:33</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">奉甜茶 ＋ 壓茶甌</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            <ol>
+              <li>好命婆牽準新娘出堂，依序奉茶（大舅媽引導稱呼）</li>
+              <li>準新娘退堂，男方親友喝完茶後將紅包捲入茶杯</li>
+              <li>收茶杯時男方說吉祥話</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:43</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">坐高腳椅 ＋ 交換戒指</div>
+          <div class="item-duration">5 分鐘</div>
+          <div class="item-detail">
+            準新娘坐高腳椅踩圓凳・準新郎戴戒指（中指）→ 準新娘回戴・金銀一起戴可綁紅線
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:48</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">添妝</div>
+          <div class="item-duration">5 分鐘</div>
+          <div class="item-detail">準岳母為準新娘戴上金飾</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:53</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">佩戴金飾</div>
+          <div class="item-duration">6 分鐘</div>
+          <div class="item-detail">
+            準婆婆為準新娘戴金項鍊／手環／耳環・準岳母為準新郎戴金項鍊
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">08:59</div>
+        <div class="dot"></div>
+        <div class="item-content rose">
+          <div class="item-title">女方回禮 ＋ 四組合照</div>
+          <div class="item-duration">11 分鐘</div>
+          <div class="item-detail">
+            六禮／聘金／喜餅各回禮一半・司儀宣告圓滿<br>
+            合照順序：男方家庭 → 女方家庭 → 雙方合體 → 新人單獨
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3: 迎娶 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-icon car">🚗</div>
+      <div class="phase-title">
+        <h2>迎娶流程</h2>
+        <span>09:10 – 10:30</span>
+      </div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time-label">09:10</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">新郎出發 ／ 新娘換裝補妝</div>
+          <div class="item-duration">20 分鐘</div>
+          <div class="item-detail">新郎離開準備迎娶，新娘同步換裝補妝</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">09:30</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">哥哥就位 ＋ 迎接新郎</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            <ol>
+              <li>哥哥提前至飯店門口等候</li>
+              <li>禮車抵達，哥哥開車門迎接新郎</li>
+              <li>新郎摸蘋果給紅包，帶捧花進飯店</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">09:40</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">拜別女方家長</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">新人向女方父母鞠躬道別，自然表達感謝與不捨</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">09:50</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">誓詞 🎬</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">新人各自念誓詞（婚錄剪進快剪影片）</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">10:00</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">蓋頭紗 ＋ 出發</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            <ol>
+              <li>先拍照留念</li>
+              <li>女方爸媽一起為新娘蓋頭紗</li>
+              <li>媒人（大舅媽）拿米篩遮頭，新人走向禮車</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">10:10</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">禮車繞飯店一圈</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            新人 ＋ 媒人同乘第二台・工作人員乘第一台・繞飯店一圈後媒人拿米篩下車接新娘
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">10:20</div>
+        <div class="dot"></div>
+        <div class="item-content sage">
+          <div class="item-title">坐財庫 ＋ 掀頭紗 ＋ 吃湯圓</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            新人坐在西裝褲上（象徵財庫）・新郎掀頭紗・兩人一起吃湯圓
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: 拍照+彩排 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-icon photo">📸</div>
+      <div class="phase-title">
+        <h2>拍照 ＋ 彩排</h2>
+        <span>10:30 – 12:10</span>
+      </div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time-label">10:30</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">類婚紗拍攝</div>
+          <div class="item-duration">30 分鐘</div>
+          <div class="item-detail">飯店大廳類婚紗拍攝</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">11:00</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">宴會廳完整彩排</div>
+          <div class="item-duration">30 分鐘</div>
+          <div class="item-detail">動線、定位、音樂、燈光完整彩排・確認進場路線</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">11:40</div>
+        <div class="dot"></div>
+        <div class="item-content">
+          <div class="item-title">新娘換髮型 ＋ 補妝</div>
+          <div class="item-duration">40 分鐘</div>
+          <div class="item-detail">準備第一套禮服進場造型</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 5: 婚宴 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-icon banq">🥂</div>
+      <div class="phase-title">
+        <h2>婚宴</h2>
+        <span>12:00 – 15:00</span>
+      </div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time-label">12:00</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">賓客入席</div>
+          <div class="item-duration">30 分鐘</div>
+          <div class="item-detail">婚禮影片輪播・收禮金・發喜餅・帶位入席</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">12:30</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">父母敬酒 ＋ 總經理致詞</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">
+            雙方父母上台敬酒・總經理致詞（3 分鐘內）・主持人宣布開桌
+          </div>
+        </div>
+      </div>
+
+      <!-- 三次進場卡片 -->
+      <div class="timeline-item" style="flex-direction: column; gap: 0.5rem;">
+        <div style="position: relative; width: 100%;">
+          <div class="time-label">三次進場</div>
+          <div class="dot"></div>
+          <div style="padding-left: 0;">
+            <div class="entry-cards">
+              <div class="entry-card one">
+                <div class="entry-card-title">一進場</div>
+                <div class="entry-card-tag">✦ 典雅路線　12:30 – 12:40</div>
+                <div class="entry-card-detail">
+                  男方父母進場<br>
+                  新郎 ＋ 岳母進場<br>
+                  新娘 ＋ 岳父壓軸<br>
+                  <em>岳父將新娘的手交給新郎</em>
+                </div>
+              </div>
+              <div class="entry-card two">
+                <div class="entry-card-title">二進場</div>
+                <div class="entry-card-tag">🩵 艾爾莎風格　13:20 – 13:30</div>
+                <div class="entry-card-detail">
+                  小姐姐走前發喜糖<br>
+                  乾女兒（2歲）搭電動汽車跟進<br>
+                  賓客互動遊戲環節<br>
+                  <em>（待確認飯店）</em>
+                </div>
+              </div>
+              <div class="entry-card three">
+                <div class="entry-card-title">三進場</div>
+                <div class="entry-card-tag">✧ 華麗謝客　14:35 – 15:00</div>
+                <div class="entry-card-detail">
+                  第三套禮服亮相<br>
+                  新人上台敬酒致詞<br>
+                  送客圓滿
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-label">12:50</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">新娘換裝（水藍禮服）＋ 補妝</div>
+          <div class="item-duration">30 分鐘</div>
+          <div class="item-detail">換第二套禮服，準備二進場</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">13:30</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">逐桌敬酒</div>
+          <div class="item-duration">30 分鐘</div>
+          <div class="item-detail">新人逐桌向賓客敬酒</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">14:00</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">播放快剪影片 🎬</div>
+          <div class="item-duration">10 分鐘</div>
+          <div class="item-detail">婚錄總監精剪（含迎娶誓詞 ＋ 昱庭精華）</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">14:10</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">新娘換裝（第三套）＋ 補妝</div>
+          <div class="item-duration">25 分鐘</div>
+          <div class="item-detail">準備三進場謝客造型</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time-label">15:00</div>
+        <div class="dot"></div>
+        <div class="item-content blue">
+          <div class="item-title">🎉 圓滿結束</div>
+          <div class="item-detail">感謝所有工作人員辛勞！</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    願這一天的每個瞬間，都成為最美的記憶 ✦
+  </div>
+
+</div>
+</body>
+</html>
